@@ -1,12 +1,14 @@
 {
-  "name": "fs",
+  "name": "sky-pilot",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
+    "build": "vite build && npm run copy:sim",
+    "copy:sim": "cp -r sim dist/sim",
+    "preview": "vite preview",
+    "export:sim": "bash scripts/export-sim.sh"
   },
   "dependencies": {
     "three": "^0.172.0"

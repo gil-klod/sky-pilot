@@ -3,84 +3,145 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sky Pilot</title>
-    <link rel="stylesheet" href="/src/style.css" />
+    <title>Sky Pilot — Choose Your Flight</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        min-height: 100vh;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: #e8f4ff;
+        background: radial-gradient(ellipse at 50% 0%, #1a3a5c 0%, #0a1628 55%, #060d18 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+      }
+
+      header { text-align: center; margin-bottom: 2.5rem; }
+
+      h1 {
+        font-size: clamp(2.2rem, 6vw, 3.2rem);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        background: linear-gradient(135deg, #7dd3fc, #38bdf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .tagline {
+        margin-top: 0.5rem;
+        opacity: 0.7;
+        font-size: 1.05rem;
+      }
+
+      .games {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+        max-width: 760px;
+        width: 100%;
+      }
+
+      .game-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1.75rem;
+        border-radius: 16px;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        background: rgba(8, 20, 38, 0.85);
+        text-decoration: none;
+        color: inherit;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      }
+
+      .game-card:hover {
+        border-color: rgba(56, 189, 248, 0.65);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+      }
+
+      .badge {
+        display: inline-block;
+        align-self: flex-start;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.25rem 0.55rem;
+        border-radius: 4px;
+        background: rgba(56, 189, 248, 0.15);
+        color: #7dd3fc;
+      }
+
+      .badge.sim {
+        background: rgba(74, 222, 128, 0.15);
+        color: #4ade80;
+      }
+
+      .game-card h2 {
+        font-size: 1.35rem;
+        font-weight: 600;
+      }
+
+      .game-card p {
+        font-size: 0.92rem;
+        line-height: 1.5;
+        opacity: 0.75;
+        flex: 1;
+      }
+
+      .play {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #38bdf8;
+        letter-spacing: 0.04em;
+      }
+
+      footer {
+        margin-top: 2.5rem;
+        text-align: center;
+        font-size: 0.78rem;
+        opacity: 0.45;
+        max-width: 520px;
+        line-height: 1.5;
+      }
+    </style>
   </head>
   <body>
-    <div id="hud"></div>
-    <div id="demo-ui" class="hidden"></div>
-    <div id="in-game-panel" class="hidden">
-      <div class="in-game-panel-inner">
-        <div class="in-game-panel-header">
-          <span>Controls &amp; Aircraft</span>
-          <button id="toggle-controls-btn" type="button" title="Hide panel (H)">−</button>
-        </div>
-        <div class="in-game-panel-body">
-          <div class="aircraft-picker">
-            <label for="aircraft-select-game">Aircraft</label>
-            <select id="aircraft-select-game" class="aircraft-select">
-              <option value="prop">Prop Plane</option>
-              <option value="jet">Jet Fighter</option>
-              <option value="helicopter">Helicopter</option>
-            </select>
-          </div>
-          <div class="controls-help in-game-controls">
-            <div class="grid">
-              <span><kbd>W</kbd> / <kbd>S</kbd></span><span>Pitch up / down</span>
-              <span><kbd>A</kbd> / <kbd>D</kbd></span><span>Roll left / right</span>
-              <span><kbd>Q</kbd> / <kbd>E</kbd></span><span>Rudder left / right</span>
-              <span><kbd>Shift</kbd> / <kbd>Ctrl</kbd></span><span>Throttle up / down</span>
-              <span><kbd>Space</kbd></span><span>Brakes (on ground)</span>
-              <span><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></span><span>Switch aircraft</span>
-              <span><kbd>M</kbd></span><span>Cycle missions</span>
-              <span><kbd>F</kbd></span><span>Toggle autopilot</span>
-              <span><kbd>C</kbd></span><span>Chase / cockpit view</span>
-              <span><kbd>H</kbd></span><span>Show / hide this panel</span>
-              <span><kbd>R</kbd></span><span>Reset flight</span>
-            </div>
-          </div>
-        </div>
-      </div>
+    <header>
+      <h1>SKY PILOT</h1>
+      <p class="tagline">Two ways to fly — pick your game</p>
+    </header>
+
+    <div class="games">
+      <a class="game-card" href="/arcade/">
+        <span class="badge">Arcade</span>
+        <h2>Sky Rings</h2>
+        <p>
+          Fast browser arcade — fly through infinite rings, collect coins, swap
+          between prop, jet, and helicopter. Great for quick fun.
+        </p>
+        <span class="play">Play arcade →</span>
+      </a>
+
+      <a class="game-card" href="/sim/">
+        <span class="badge sim">Airliner Sim</span>
+        <h2>747 &amp; A380</h2>
+        <p>
+          Real Boeing 747-400 and Airbus A380 models. Pick your airliner in the
+          hangar, then take off on a wide runway. Built with Godot.
+        </p>
+        <span class="play">Fly airliner →</span>
+      </a>
     </div>
-    <div id="overlay">
-      <div id="menu">
-        <h1>Sky Pilot</h1>
-        <p class="subtitle">Infinite rings, coins to collect, and endless sky — how long can you fly?</p>
-        <div class="aircraft-picker">
-          <label for="aircraft-select">Aircraft</label>
-          <select id="aircraft-select" class="aircraft-select">
-            <option value="prop">Prop Plane</option>
-            <option value="jet">Jet Fighter</option>
-            <option value="helicopter">Helicopter</option>
-          </select>
-        </div>
-        <div class="controls-help">
-          <h2>Controls</h2>
-          <div class="grid">
-            <span><kbd>W</kbd> / <kbd>S</kbd></span><span>Pitch up / down</span>
-            <span><kbd>A</kbd> / <kbd>D</kbd></span><span>Roll left / right</span>
-            <span><kbd>Q</kbd> / <kbd>E</kbd></span><span>Rudder left / right</span>
-            <span><kbd>Shift</kbd> / <kbd>Ctrl</kbd></span><span>Throttle up / down</span>
-            <span><kbd>Space</kbd></span><span>Brakes (on ground)</span>
-            <span><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></span><span>Switch aircraft</span>
-            <span><kbd>M</kbd></span><span>Cycle missions</span>
-            <span><kbd>F</kbd></span><span>Toggle autopilot</span>
-            <span><kbd>C</kbd></span><span>Toggle chase / cockpit view</span>
-            <span><kbd>H</kbd></span><span>Show / hide controls panel</span>
-            <span><kbd>R</kbd></span><span>Reset flight</span>
-          </div>
-        </div>
-        <div class="menu-buttons">
-          <button id="start-btn">Take Off</button>
-          <button id="demo-btn" class="secondary">Watch Demo</button>
-        </div>
-      </div>
-      <div id="crash-msg" class="hidden">
-        <h2>Mayday!</h2>
-        <p id="crash-detail"></p>
-        <button id="restart-btn">Try Again</button>
-      </div>
-    </div>
-    <script type="module" src="/src/main.js"></script>
+
+    <footer>
+      Airliner models © Flightradar24 (GPLv2). First load of the sim may take
+      15–30 seconds while the 3D engine downloads.
+    </footer>
   </body>
 </html>

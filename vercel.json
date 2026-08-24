@@ -1,0 +1,16 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/sim/(.*)\\.wasm",
+      "headers": [
+        { "key": "Content-Type", "value": "application/wasm" }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/arcade", "destination": "/arcade/index.html" },
+    { "source": "/sim", "destination": "/sim/index.html" }
+  ]
+}
