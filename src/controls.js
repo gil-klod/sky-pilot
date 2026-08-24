@@ -19,6 +19,11 @@ const KEY_MAP = {
   KeyC: "toggleCamera",
   KeyR: "reset",
   Escape: "skipDemo",
+  KeyF: "toggleAutopilot",
+  KeyM: "nextMission",
+  Digit1: "aircraftProp",
+  Digit2: "aircraftJet",
+  Digit3: "aircraftHeli",
 };
 
 export function initControls(onAction) {
@@ -30,7 +35,14 @@ export function initControls(onAction) {
       e.preventDefault();
     }
 
-    if (action === "toggleCamera" || action === "reset" || action === "skipDemo") {
+    if (
+      action === "toggleCamera" ||
+      action === "reset" ||
+      action === "skipDemo" ||
+      action === "toggleAutopilot" ||
+      action === "nextMission" ||
+      action.startsWith("aircraft")
+    ) {
       if (!HELD.has(e.code)) onAction(action);
       HELD.add(e.code);
       return;

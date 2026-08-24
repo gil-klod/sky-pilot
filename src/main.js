@@ -1,13 +1,17 @@
 import * as THREE from "three";
-import { createAirplane, FlightModel } from "./airplane.js";
+import { createAircraftMesh, FlightModel } from "./airplane.js";
 import { initControls, getInput } from "./controls.js";
 import { createHUD, updateHUD } from "./hud.js";
 import { DemoFlight, createDemoUI } from "./demo.js";
+import { WindField } from "./wind.js";
+import { SoundManager } from "./sounds.js";
+import { Autopilot } from "./autopilot.js";
 import {
   createWorld,
   terrainHeight,
   checkRingCollision,
   resetRings,
+  createWaypointMarkers,
 } from "./world.js";
 
 const overlay = document.getElementById("overlay");
@@ -17,16 +21,22 @@ const crashDetail = document.getElementById("crash-detail");
 const startBtn = document.getElementById("start-btn");
 const demoBtn = document.getElementById("demo-btn");
 const restartBtn = document.getElementById("restart-btn");
+const aircraftSelect = document.getElementById("aircraft-select");
 const hudContainer = document.getElementById("hud");
 const demoContainer = document.getElementById("demo-ui");
 
 const hud = createHUD(hudContainer);
 const demoUI = createDemoUI(demoContainer);
+const windField = new WindField();
+const sounds = new SoundManager();
+const autopilot = new Autopilot();
 
 let playing = false;
 let demoMode = false;
 let score = 0;
 let chaseCamera = true;
+let selectedAircraft = "prop";
+let aircraftMesh = null;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -37,17 +47,36 @@ document.body.insertBefore(renderer.domElement, overlay);
 
 const scene = new THREE.Scene();
 const world = createWorld(scene);
+const waypoints = createWaypointMarkers(scene);
 
-const airplaneMesh = createAirplane();
-airplaneMesh.castShadow = true;
-scene.add(airplaneMesh);
-
-const flight = new FlightModel();
+const flight = new FlightModel(selectedAircraft);
 flight.reset(world.startPosition, world.startHeading);
+autopilot.setMission(0);
+
+function mountAircraft(type) {
+  if (aircraftMesh) scene.remove(aircraftMesh);
+  selectedAircraft = type;
+  aircraftMesh = createAircraftMesh(type);
+  aircraftMesh.castShadow = true;
+  scene.add(aircraftMesh);
+  flight.setType(type);
+  if (aircraftSelect) aircraftSelect.value = type;
+}
+
+mountAircraft(selectedAircraft);
 
 const chaseCam = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.5, 800);
 const cockpitCam = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 800);
 let activeCamera = chaseCam;
+
+function updateMissionMarkers() {
+  const wps = autopilot.waypoints;
+  if (wps.length && playing) {
+    waypoints.setWaypoints(wps, autopilot.waypointIndex);
+  } else {
+    waypoints.hide();
+  }
+}
 
 function updateCamera() {
   activeCamera = chaseCamera ? chaseCam : cockpitCam;
@@ -66,25 +95,46 @@ function updateCamera() {
 }
 
 function syncMesh() {
-  airplaneMesh.position.copy(flight.position);
-  airplaneMesh.quaternion.copy(flight.quaternion);
+  if (!aircraftMesh) return;
+  aircraftMesh.position.copy(flight.position);
+  aircraftMesh.quaternion.copy(flight.quaternion);
 
-  const prop = airplaneMesh.userData.propeller;
-  if (prop) {
-    prop.rotation.z += flight.throttle * 0.8 + 0.05;
+  const spinner = aircraftMesh.userData.spinner;
+  if (spinner) {
+    if (selectedAircraft === "helicopter") {
+      spinner.rotation.y += flight.throttle * 0.5 + 0.08;
+    } else {
+      spinner.rotation.z += flight.throttle * 0.8 + 0.05;
+    }
   }
+  const tailRotor = aircraftMesh.userData.tailRotor;
+  if (tailRotor) tailRotor.rotation.x += 0.4;
+}
+
+function refreshHUD(statusText = "") {
+  const groundY = terrainHeight(flight.position.x, flight.position.z);
+  updateHUD(hud, flight, groundY, score, flight.stallSpeed, {
+    wind: windField.getDisplay(),
+    missionText: autopilot.getStatusText(),
+    autopilotOn: autopilot.enabled,
+    statusText,
+  });
 }
 
 function resetFlight() {
   stopDemo();
+  sounds.resume();
   flight.reset(world.startPosition, world.startHeading);
   resetRings(world.rings);
+  autopilot.completed = false;
+  autopilot.waypointIndex = 0;
   score = 0;
   crashMsg.classList.add("hidden");
   menu.classList.add("hidden");
   playing = true;
   demoMode = false;
   overlay.classList.add("hidden");
+  updateMissionMarkers();
 }
 
 function stopDemo() {
@@ -94,10 +144,12 @@ function stopDemo() {
 }
 
 function startDemo() {
+  sounds.resume();
   playing = false;
   demoMode = true;
   chaseCamera = true;
   resetRings(world.rings);
+  waypoints.hide();
   score = 0;
   crashMsg.classList.add("hidden");
   menu.classList.add("hidden");
@@ -116,8 +168,27 @@ function endDemo(completed) {
 
   if (completed) {
     menu.querySelector(".subtitle").textContent =
-      "Demo complete! Collect rings and land on the runway.";
+      "Demo complete! Try missions, autopilot (F), or switch aircraft (1/2/3).";
   }
+}
+
+function switchAircraft(type) {
+  sounds.resume();
+  mountAircraft(type);
+  if (playing) refreshHUD(`${flight.displayName} selected`);
+}
+
+function showCrash(reason) {
+  playing = false;
+  sounds.playCrash();
+  overlay.classList.remove("hidden");
+  menu.classList.add("hidden");
+  crashMsg.classList.remove("hidden");
+  waypoints.hide();
+  crashDetail.textContent =
+    reason === "crash-hard"
+      ? "Too fast or too steep on landing. Reduce speed and keep wings level!"
+      : "Something went wrong. Check your speed and angle on approach.";
 }
 
 const demo = new DemoFlight(
@@ -129,27 +200,14 @@ const demo = new DemoFlight(
     score = demoScore ?? score;
 
     if (collected > 0) {
-      hud.status.textContent = `+${collected * 100} RING BONUS!`;
-      hud.status.className = "hud-top hud-panel";
-      hud.status.style.opacity = "1";
+      sounds.playRing();
+      refreshHUD(`+${collected * 100} RING BONUS!`);
+    } else {
+      refreshHUD("");
     }
-
-    const groundY = terrainHeight(flight.position.x, flight.position.z);
-    updateHUD(hud, flight, groundY, score, flight.stallSpeed);
   },
   endDemo
 );
-
-function showCrash(reason) {
-  playing = false;
-  overlay.classList.remove("hidden");
-  menu.classList.add("hidden");
-  crashMsg.classList.remove("hidden");
-  crashDetail.textContent =
-    reason === "crash-hard"
-      ? "Too fast or too steep on landing. Reduce speed and keep wings level!"
-      : "Something went wrong. Check your speed and angle on approach.";
-}
 
 initControls((action) => {
   if (action === "skipDemo" && demoMode) {
@@ -158,14 +216,42 @@ initControls((action) => {
     return;
   }
   if (demoMode) return;
-  if (!playing && action !== "reset") return;
+
+  if (action === "aircraftProp") switchAircraft("prop");
+  if (action === "aircraftJet") switchAircraft("jet");
+  if (action === "aircraftHeli") switchAircraft("helicopter");
+
+  if (!playing && !["aircraftProp", "aircraftJet", "aircraftHeli", "reset"].includes(action)) return;
+
   if (action === "toggleCamera") chaseCamera = !chaseCamera;
   if (action === "reset") resetFlight();
+
+  if (action === "toggleAutopilot" && playing) {
+    if (autopilot.mission.waypoints.length === 0) {
+      refreshHUD("Select a mission with M first");
+      return;
+    }
+    const on = autopilot.toggle();
+    sounds.playAutopilot(on);
+    refreshHUD(on ? "Autopilot engaged" : "Autopilot disengaged");
+  }
+
+  if (action === "nextMission" && playing) {
+    autopilot.nextMission();
+    autopilot.completed = false;
+    updateMissionMarkers();
+    refreshHUD(`Mission: ${autopilot.mission.name}`);
+  }
 });
 
-startBtn.addEventListener("click", resetFlight);
+startBtn.addEventListener("click", () => {
+  selectedAircraft = aircraftSelect?.value || selectedAircraft;
+  switchAircraft(selectedAircraft);
+  resetFlight();
+});
 demoBtn.addEventListener("click", startDemo);
 restartBtn.addEventListener("click", resetFlight);
+aircraftSelect?.addEventListener("change", (e) => switchAircraft(e.target.value));
 
 window.addEventListener("resize", () => {
   const w = window.innerWidth;
@@ -185,28 +271,52 @@ function animate() {
 
   if (demoMode) {
     demo.update(dt, world.rings);
+    sounds.update({
+      aircraftType: selectedAircraft,
+      throttle: flight.throttle,
+      speed: flight.getAirspeed(),
+      onGround: flight.onGround,
+      stallWarning: false,
+    });
   } else if (playing && !flight.crashed) {
-    const input = getInput();
-    const result = flight.update(dt, input, terrainHeight);
+    const input = autopilot.mergeInput(getInput(), flight);
+    const result = flight.update(dt, input, terrainHeight, windField);
 
-    if (result === "crash-hard") {
-      showCrash("crash-hard");
+    if (result === "crash-hard") showCrash("crash-hard");
+
+    const wpResult = autopilot.advanceIfReached(flight);
+    if (wpResult === "advance") {
+      sounds.playWaypoint();
+      updateMissionMarkers();
+      refreshHUD(`Waypoint ${autopilot.waypointIndex}/${autopilot.waypoints.length}`);
+    } else if (wpResult === "complete") {
+      score += autopilot.mission.reward;
+      sounds.playMissionComplete();
+      updateMissionMarkers();
+      refreshHUD(`Mission complete! +${autopilot.mission.reward}`);
     }
 
     const collected = checkRingCollision(flight.position, world.rings);
-    score += collected * 100;
-
     if (collected > 0) {
-      hud.status.textContent = `+${collected * 100} RING BONUS!`;
-      hud.status.className = "hud-top hud-panel";
-      hud.status.style.opacity = "1";
+      score += collected * 100;
+      sounds.playRing();
+      refreshHUD(`+${collected * 100} RING BONUS!`);
       setTimeout(() => {
-        if (playing) hud.status.style.opacity = "0";
+        if (playing) refreshHUD("");
       }, 1500);
+    } else {
+      refreshHUD("");
     }
 
-    const groundY = terrainHeight(flight.position.x, flight.position.z);
-    updateHUD(hud, flight, groundY, score, flight.stallSpeed);
+    const speed = flight.getAirspeed();
+    const stallKts = flight.stallSpeed * 1.94384;
+    sounds.update({
+      aircraftType: selectedAircraft,
+      throttle: flight.throttle,
+      speed,
+      onGround: flight.onGround,
+      stallWarning: flight.stallSpeed > 0 && speed < stallKts && !flight.onGround,
+    });
   }
 
   syncMesh();

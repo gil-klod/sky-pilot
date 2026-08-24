@@ -184,3 +184,50 @@ export function resetRings(rings) {
     ring.visible = true;
   }
 }
+
+export function createWaypointMarkers(scene) {
+  const group = new THREE.Group();
+  group.name = "waypoints";
+
+  const poleMat = new THREE.MeshStandardMaterial({ color: 0x22d3ee, emissive: 0x0891b2, emissiveIntensity: 0.4 });
+  const flagMat = new THREE.MeshStandardMaterial({ color: 0xfbbf24, emissive: 0xf59e0b, emissiveIntensity: 0.5 });
+
+  return {
+    group,
+    setWaypoints(positions, activeIndex = 0) {
+      while (group.children.length) group.remove(group.children[0]);
+
+      positions.forEach((pos, i) => {
+        const wp = new THREE.Group();
+        wp.position.set(pos.x, pos.y, pos.z);
+
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 8, 8), poleMat);
+        pole.position.y = -4;
+        wp.add(pole);
+
+        const flag = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.15, 1.5), flagMat);
+        flag.position.set(1.2, 0, 0);
+        wp.add(flag);
+
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(3, 0.2, 6, 16),
+          new THREE.MeshStandardMaterial({
+            color: i === activeIndex ? 0x4ade80 : 0x64748b,
+            emissive: i === activeIndex ? 0x22c55e : 0x334155,
+            emissiveIntensity: 0.6,
+            transparent: true,
+            opacity: i === activeIndex ? 0.9 : 0.45,
+          })
+        );
+        wp.add(ring);
+        wp.userData.index = i;
+        group.add(wp);
+      });
+
+      if (!group.parent) scene.add(group);
+    },
+    hide() {
+      if (group.parent) group.parent.remove(group);
+    },
+  };
+}

@@ -13,6 +13,14 @@
       <div id="menu">
         <h1>Sky Pilot</h1>
         <p class="subtitle">A browser flight sim — collect rings, land on the runway!</p>
+        <div class="aircraft-picker">
+          <label for="aircraft-select">Aircraft</label>
+          <select id="aircraft-select">
+            <option value="prop">Prop Plane</option>
+            <option value="jet">Jet Fighter</option>
+            <option value="helicopter">Helicopter</option>
+          </select>
+        </div>
         <div class="controls-help">
           <h2>Controls</h2>
           <div class="grid">
@@ -21,6 +29,9 @@
             <span><kbd>Q</kbd> / <kbd>E</kbd></span><span>Rudder left / right</span>
             <span><kbd>Shift</kbd> / <kbd>Ctrl</kbd></span><span>Throttle up / down</span>
             <span><kbd>Space</kbd></span><span>Brakes (on ground)</span>
+            <span><kbd>1</kbd> / <kbd>2</kbd> / <kbd>3</kbd></span><span>Switch aircraft</span>
+            <span><kbd>M</kbd></span><span>Cycle missions</span>
+            <span><kbd>F</kbd></span><span>Toggle autopilot</span>
             <span><kbd>C</kbd></span><span>Toggle chase / cockpit view</span>
             <span><kbd>R</kbd></span><span>Reset flight</span>
           </div>
