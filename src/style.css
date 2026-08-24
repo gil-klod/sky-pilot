@@ -74,14 +74,116 @@ h1 {
   opacity: 0.65;
 }
 
-.aircraft-picker select {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(125, 211, 252, 0.35);
-  border-radius: 8px;
+.aircraft-picker select,
+.aircraft-select {
+  background-color: #0c2340;
   color: #e8f4ff;
+  color-scheme: dark;
+  border: 1px solid rgba(125, 211, 252, 0.55);
+  border-radius: 8px;
   padding: 0.5rem 0.75rem;
   font-size: 0.95rem;
   cursor: pointer;
+  min-width: 9rem;
+}
+
+.aircraft-picker select:hover,
+.aircraft-select:hover {
+  border-color: #38bdf8;
+  background-color: #112d4e;
+}
+
+.aircraft-picker select:focus,
+.aircraft-select:focus {
+  outline: none;
+  border-color: #7dd3fc;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+}
+
+.aircraft-picker select option,
+.aircraft-select option {
+  background-color: #0c2340;
+  color: #e8f4ff;
+}
+
+#in-game-panel {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 12;
+  pointer-events: auto;
+  max-width: 300px;
+}
+
+#in-game-panel.collapsed .in-game-panel-body {
+  display: none;
+}
+
+#in-game-panel.collapsed #toggle-controls-btn {
+  transform: rotate(180deg);
+}
+
+.in-game-panel-inner {
+  background: rgba(0, 10, 20, 0.82);
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.in-game-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(125, 211, 252, 0.2);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #7dd3fc;
+}
+
+#toggle-controls-btn {
+  padding: 0.15rem 0.5rem;
+  font-size: 1rem;
+  line-height: 1;
+  min-width: auto;
+  color: #e8f4ff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(125, 211, 252, 0.3);
+}
+
+#toggle-controls-btn:hover {
+  transform: none;
+  box-shadow: none;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.in-game-panel-body {
+  padding: 0.75rem;
+}
+
+.in-game-panel-body .aircraft-picker {
+  margin-bottom: 0.75rem;
+  justify-content: flex-start;
+}
+
+.in-game-controls {
+  margin-bottom: 0;
+  padding: 0.75rem;
+  font-size: 0.8rem;
+}
+
+.in-game-controls .grid {
+  gap: 0.25rem 0.75rem;
+  font-size: 0.78rem;
+}
+
+.in-game-controls kbd {
+  font-size: 0.72rem;
+  min-width: 1.4rem;
 }
 
 .hud-aircraft {

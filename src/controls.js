@@ -24,6 +24,7 @@ const KEY_MAP = {
   Digit1: "aircraftProp",
   Digit2: "aircraftJet",
   Digit3: "aircraftHeli",
+  KeyH: "toggleControlsPanel",
 };
 
 export function initControls(onAction) {
@@ -41,6 +42,7 @@ export function initControls(onAction) {
       action === "skipDemo" ||
       action === "toggleAutopilot" ||
       action === "nextMission" ||
+      action === "toggleControlsPanel" ||
       action.startsWith("aircraft")
     ) {
       if (!HELD.has(e.code)) onAction(action);

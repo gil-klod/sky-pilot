@@ -22,6 +22,9 @@ const startBtn = document.getElementById("start-btn");
 const demoBtn = document.getElementById("demo-btn");
 const restartBtn = document.getElementById("restart-btn");
 const aircraftSelect = document.getElementById("aircraft-select");
+const aircraftSelectGame = document.getElementById("aircraft-select-game");
+const inGamePanel = document.getElementById("in-game-panel");
+const toggleControlsBtn = document.getElementById("toggle-controls-btn");
 const hudContainer = document.getElementById("hud");
 const demoContainer = document.getElementById("demo-ui");
 
@@ -53,6 +56,26 @@ const flight = new FlightModel(selectedAircraft);
 flight.reset(world.startPosition, world.startHeading);
 autopilot.setMission(0);
 
+function syncAircraftSelects(type) {
+  if (aircraftSelect) aircraftSelect.value = type;
+  if (aircraftSelectGame) aircraftSelectGame.value = type;
+}
+
+function showInGamePanel() {
+  inGamePanel?.classList.remove("hidden");
+  inGamePanel?.classList.remove("collapsed");
+}
+
+function hideInGamePanel() {
+  inGamePanel?.classList.add("hidden");
+}
+
+function toggleInGamePanel() {
+  if (inGamePanel?.classList.contains("hidden")) return;
+  inGamePanel.classList.toggle("collapsed");
+  toggleControlsBtn.textContent = inGamePanel.classList.contains("collapsed") ? "+" : "−";
+}
+
 function mountAircraft(type) {
   if (aircraftMesh) scene.remove(aircraftMesh);
   selectedAircraft = type;
@@ -60,7 +83,7 @@ function mountAircraft(type) {
   aircraftMesh.castShadow = true;
   scene.add(aircraftMesh);
   flight.setType(type);
-  if (aircraftSelect) aircraftSelect.value = type;
+  syncAircraftSelects(type);
 }
 
 mountAircraft(selectedAircraft);
@@ -134,6 +157,7 @@ function resetFlight() {
   playing = true;
   demoMode = false;
   overlay.classList.add("hidden");
+  showInGamePanel();
   updateMissionMarkers();
 }
 
@@ -155,12 +179,14 @@ function startDemo() {
   menu.classList.add("hidden");
   overlay.classList.add("hidden");
   demoUI.show();
+  showInGamePanel();
   demo.start();
 }
 
 function endDemo(completed) {
   demoMode = false;
   demoUI.hide();
+  hideInGamePanel();
   overlay.classList.remove("hidden");
   menu.classList.remove("hidden");
   resetRings(world.rings);
@@ -181,6 +207,7 @@ function switchAircraft(type) {
 function showCrash(reason) {
   playing = false;
   sounds.playCrash();
+  hideInGamePanel();
   overlay.classList.remove("hidden");
   menu.classList.add("hidden");
   crashMsg.classList.remove("hidden");
@@ -213,6 +240,10 @@ initControls((action) => {
   if (action === "skipDemo" && demoMode) {
     stopDemo();
     endDemo(false);
+    return;
+  }
+  if (action === "toggleControlsPanel") {
+    toggleInGamePanel();
     return;
   }
   if (demoMode) return;
@@ -252,6 +283,8 @@ startBtn.addEventListener("click", () => {
 demoBtn.addEventListener("click", startDemo);
 restartBtn.addEventListener("click", resetFlight);
 aircraftSelect?.addEventListener("change", (e) => switchAircraft(e.target.value));
+aircraftSelectGame?.addEventListener("change", (e) => switchAircraft(e.target.value));
+toggleControlsBtn?.addEventListener("click", toggleInGamePanel);
 
 window.addEventListener("resize", () => {
   const w = window.innerWidth;
