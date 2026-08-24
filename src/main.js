@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { createAirplane, FlightModel } from "./airplane.js";
 import { initControls, getInput } from "./controls.js";
 import { createHUD, updateHUD } from "./hud.js";
+import { DemoFlight, createDemoUI } from "./demo.js";
 import {
   createWorld,
   terrainHeight,
@@ -14,11 +15,16 @@ const menu = document.getElementById("menu");
 const crashMsg = document.getElementById("crash-msg");
 const crashDetail = document.getElementById("crash-detail");
 const startBtn = document.getElementById("start-btn");
+const demoBtn = document.getElementById("demo-btn");
 const restartBtn = document.getElementById("restart-btn");
 const hudContainer = document.getElementById("hud");
+const demoContainer = document.getElementById("demo-ui");
 
 const hud = createHUD(hudContainer);
+const demoUI = createDemoUI(demoContainer);
+
 let playing = false;
+let demoMode = false;
 let score = 0;
 let chaseCamera = true;
 
@@ -44,8 +50,7 @@ const cockpitCam = new THREE.PerspectiveCamera(75, window.innerWidth / window.in
 let activeCamera = chaseCam;
 
 function updateCamera() {
-  const cam = chaseCamera ? chaseCam : cockpitCam;
-  activeCamera = cam;
+  activeCamera = chaseCamera ? chaseCam : cockpitCam;
 
   if (chaseCamera) {
     const offset = new THREE.Vector3(0, 4, 14).applyQuaternion(flight.quaternion);
@@ -71,14 +76,69 @@ function syncMesh() {
 }
 
 function resetFlight() {
+  stopDemo();
   flight.reset(world.startPosition, world.startHeading);
   resetRings(world.rings);
   score = 0;
   crashMsg.classList.add("hidden");
   menu.classList.add("hidden");
   playing = true;
+  demoMode = false;
   overlay.classList.add("hidden");
 }
+
+function stopDemo() {
+  demo.cancel();
+  demoMode = false;
+  demoUI.hide();
+}
+
+function startDemo() {
+  playing = false;
+  demoMode = true;
+  chaseCamera = true;
+  resetRings(world.rings);
+  score = 0;
+  crashMsg.classList.add("hidden");
+  menu.classList.add("hidden");
+  overlay.classList.add("hidden");
+  demoUI.show();
+  demo.start();
+}
+
+function endDemo(completed) {
+  demoMode = false;
+  demoUI.hide();
+  overlay.classList.remove("hidden");
+  menu.classList.remove("hidden");
+  resetRings(world.rings);
+  flight.reset(world.startPosition, world.startHeading);
+
+  if (completed) {
+    menu.querySelector(".subtitle").textContent =
+      "Demo complete! Collect rings and land on the runway.";
+  }
+}
+
+const demo = new DemoFlight(
+  flight,
+  ({ caption, keys, progress, score: demoScore, collected }) => {
+    demoUI.setCaption(caption);
+    demoUI.setKeys(keys);
+    demoUI.setProgress(progress);
+    score = demoScore ?? score;
+
+    if (collected > 0) {
+      hud.status.textContent = `+${collected * 100} RING BONUS!`;
+      hud.status.className = "hud-top hud-panel";
+      hud.status.style.opacity = "1";
+    }
+
+    const groundY = terrainHeight(flight.position.x, flight.position.z);
+    updateHUD(hud, flight, groundY, score, flight.stallSpeed);
+  },
+  endDemo
+);
 
 function showCrash(reason) {
   playing = false;
@@ -92,12 +152,19 @@ function showCrash(reason) {
 }
 
 initControls((action) => {
+  if (action === "skipDemo" && demoMode) {
+    stopDemo();
+    endDemo(false);
+    return;
+  }
+  if (demoMode) return;
   if (!playing && action !== "reset") return;
   if (action === "toggleCamera") chaseCamera = !chaseCamera;
   if (action === "reset") resetFlight();
 });
 
 startBtn.addEventListener("click", resetFlight);
+demoBtn.addEventListener("click", startDemo);
 restartBtn.addEventListener("click", resetFlight);
 
 window.addEventListener("resize", () => {
@@ -116,7 +183,9 @@ function animate() {
   requestAnimationFrame(animate);
   const dt = Math.min(clock.getDelta(), 0.05);
 
-  if (playing && !flight.crashed) {
+  if (demoMode) {
+    demo.update(dt, world.rings);
+  } else if (playing && !flight.crashed) {
     const input = getInput();
     const result = flight.update(dt, input, terrainHeight);
 

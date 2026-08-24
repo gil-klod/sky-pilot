@@ -18,6 +18,7 @@ const KEY_MAP = {
   Space: "brake",
   KeyC: "toggleCamera",
   KeyR: "reset",
+  Escape: "skipDemo",
 };
 
 export function initControls(onAction) {
@@ -29,7 +30,7 @@ export function initControls(onAction) {
       e.preventDefault();
     }
 
-    if (action === "toggleCamera" || action === "reset") {
+    if (action === "toggleCamera" || action === "reset" || action === "skipDemo") {
       if (!HELD.has(e.code)) onAction(action);
       HELD.add(e.code);
       return;

@@ -8,6 +8,7 @@
   </head>
   <body>
     <div id="hud"></div>
+    <div id="demo-ui" class="hidden"></div>
     <div id="overlay">
       <div id="menu">
         <h1>Sky Pilot</h1>
@@ -24,7 +25,10 @@
             <span><kbd>R</kbd></span><span>Reset flight</span>
           </div>
         </div>
-        <button id="start-btn">Take Off</button>
+        <div class="menu-buttons">
+          <button id="start-btn">Take Off</button>
+          <button id="demo-btn" class="secondary">Watch Demo</button>
+        </div>
       </div>
       <div id="crash-msg" class="hidden">
         <h2>Mayday!</h2>
