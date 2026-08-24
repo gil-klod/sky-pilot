@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Pilot</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div id="hud"></div>
+    <div id="overlay">
+      <div id="menu">
+        <h1>Sky Pilot</h1>
+        <p class="subtitle">A browser flight sim — collect rings, land on the runway!</p>
+        <div class="controls-help">
+          <h2>Controls</h2>
+          <div class="grid">
+            <span><kbd>W</kbd> / <kbd>S</kbd></span><span>Pitch up / down</span>
+            <span><kbd>A</kbd> / <kbd>D</kbd></span><span>Roll left / right</span>
+            <span><kbd>Q</kbd> / <kbd>E</kbd></span><span>Rudder left / right</span>
+            <span><kbd>Shift</kbd> / <kbd>Ctrl</kbd></span><span>Throttle up / down</span>
+            <span><kbd>Space</kbd></span><span>Brakes (on ground)</span>
+            <span><kbd>C</kbd></span><span>Toggle chase / cockpit view</span>
+            <span><kbd>R</kbd></span><span>Reset flight</span>
+          </div>
+        </div>
+        <button id="start-btn">Take Off</button>
+      </div>
+      <div id="crash-msg" class="hidden">
+        <h2>Mayday!</h2>
+        <p id="crash-detail"></p>
+        <button id="restart-btn">Try Again</button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
