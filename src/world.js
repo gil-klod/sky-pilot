@@ -18,9 +18,9 @@ export function terrainHeight(x, z) {
 export function createWorld(scene) {
   const world = { rings: [], clouds: [] };
 
-  // Sky
-  scene.background = new THREE.Color(0x5eb3f5);
-  scene.fog = new THREE.Fog(0x8ec8f8, 120, 450);
+  // Sky — richer gradient feel via fog + background
+  scene.background = new THREE.Color(0x4da6e8);
+  scene.fog = new THREE.Fog(0x9ad4fa, 150, 520);
 
   // Lighting
   const ambient = new THREE.AmbientLight(0xb8d4f0, 0.55);
@@ -100,34 +100,8 @@ export function createWorld(scene) {
   scene.add(runwayGroup);
   world.runway = runwayGroup;
 
-  // Collectible rings
-  const ringPositions = [
-    [0, 35, -80],
-    [40, 45, -120],
-    [-35, 55, -160],
-    [60, 40, -200],
-    [-50, 65, -240],
-    [0, 50, -280],
-    [80, 35, -320],
-    [-70, 45, -360],
-    [0, 70, -400],
-  ];
-
-  const ringMat = new THREE.MeshStandardMaterial({
-    color: 0xfbbf24,
-    emissive: 0xfbbf24,
-    emissiveIntensity: 0.6,
-    metalness: 0.5,
-    roughness: 0.3,
-  });
-
-  for (const [x, y, z] of ringPositions) {
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(5, 0.35, 8, 24), ringMat);
-    ring.position.set(x, y, z);
-    ring.userData.collected = false;
-    scene.add(ring);
-    world.rings.push(ring);
-  }
+  world.rings = [];
+  world.coins = [];
 
   // Clouds
   const cloudMat = new THREE.MeshStandardMaterial({
@@ -162,27 +136,6 @@ export function createWorld(scene) {
   world.startHeading = 0;
 
   return world;
-}
-
-export function checkRingCollision(planePos, rings) {
-  let collected = 0;
-  for (const ring of rings) {
-    if (ring.userData.collected) continue;
-    const dist = planePos.distanceTo(ring.position);
-    if (dist < 6) {
-      ring.userData.collected = true;
-      ring.visible = false;
-      collected++;
-    }
-  }
-  return collected;
-}
-
-export function resetRings(rings) {
-  for (const ring of rings) {
-    ring.userData.collected = false;
-    ring.visible = true;
-  }
 }
 
 export function createWaypointMarkers(scene) {

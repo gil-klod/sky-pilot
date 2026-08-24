@@ -86,6 +86,11 @@ export class SoundManager {
     setTimeout(() => this.playTone(1175, 0.15, "sine", 0.1), 80);
   }
 
+  playCoin() {
+    this.playTone(1318, 0.08, "triangle", 0.1);
+    setTimeout(() => this.playTone(1760, 0.1, "sine", 0.08), 50);
+  }
+
   playWaypoint() {
     this.playTone(660, 0.1, "triangle", 0.1);
     setTimeout(() => this.playTone(990, 0.12, "triangle", 0.08), 70);

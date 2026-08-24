@@ -369,6 +369,55 @@ button.secondary:hover {
   display: none !important;
 }
 
+.hud-stats-bar {
+  position: absolute;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  background: rgba(0, 10, 20, 0.72);
+  border: 1px solid rgba(125, 211, 252, 0.35);
+  border-radius: 999px;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+}
+
+.hud-stat {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.5rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hud-stat:last-child {
+  border-right: none;
+}
+
+.hud-stat-icon {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.hud-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #7dd3fc;
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-stat-coins .hud-stat-value {
+  color: #fcd34d;
+}
+
+.hud-stat-bank {
+  font-size: 0.62rem;
+  opacity: 0.5;
+  margin-left: 0.15rem;
+}
+
 .hud-panel {
   position: absolute;
   background: rgba(0, 10, 20, 0.55);

@@ -6,11 +6,10 @@ import { DemoFlight, createDemoUI } from "./demo.js";
 import { WindField } from "./wind.js";
 import { SoundManager } from "./sounds.js";
 import { Autopilot } from "./autopilot.js";
+import { CollectibleManager, formatTime } from "./collectibles.js";
 import {
   createWorld,
   terrainHeight,
-  checkRingCollision,
-  resetRings,
   createWaypointMarkers,
 } from "./world.js";
 
@@ -37,6 +36,7 @@ const autopilot = new Autopilot();
 let playing = false;
 let demoMode = false;
 let score = 0;
+let flightTime = 0;
 let chaseCamera = true;
 let selectedAircraft = "prop";
 let aircraftMesh = null;
@@ -50,6 +50,7 @@ document.body.insertBefore(renderer.domElement, overlay);
 
 const scene = new THREE.Scene();
 const world = createWorld(scene);
+const collectibles = new CollectibleManager(scene);
 const waypoints = createWaypointMarkers(scene);
 
 const flight = new FlightModel(selectedAircraft);
@@ -136,11 +137,16 @@ function syncMesh() {
 
 function refreshHUD(statusText = "") {
   const groundY = terrainHeight(flight.position.x, flight.position.z);
+  const stats = collectibles.getStats();
   updateHUD(hud, flight, groundY, score, flight.stallSpeed, {
     wind: windField.getDisplay(),
     missionText: autopilot.getStatusText(),
     autopilotOn: autopilot.enabled,
     statusText,
+    flightTime,
+    rings: stats.ringsThisRun,
+    coins: stats.coinsThisRun,
+    coinBank: stats.coinBank,
   });
 }
 
@@ -148,10 +154,11 @@ function resetFlight() {
   stopDemo();
   sounds.resume();
   flight.reset(world.startPosition, world.startHeading);
-  resetRings(world.rings);
+  collectibles.reset();
   autopilot.completed = false;
   autopilot.waypointIndex = 0;
   score = 0;
+  flightTime = 0;
   crashMsg.classList.add("hidden");
   menu.classList.add("hidden");
   playing = true;
@@ -172,9 +179,10 @@ function startDemo() {
   playing = false;
   demoMode = true;
   chaseCamera = true;
-  resetRings(world.rings);
+  collectibles.resetForDemo();
   waypoints.hide();
   score = 0;
+  flightTime = 0;
   crashMsg.classList.add("hidden");
   menu.classList.add("hidden");
   overlay.classList.add("hidden");
@@ -189,7 +197,7 @@ function endDemo(completed) {
   hideInGamePanel();
   overlay.classList.remove("hidden");
   menu.classList.remove("hidden");
-  resetRings(world.rings);
+  collectibles.clearAll();
   flight.reset(world.startPosition, world.startHeading);
 
   if (completed) {
@@ -212,10 +220,12 @@ function showCrash(reason) {
   menu.classList.add("hidden");
   crashMsg.classList.remove("hidden");
   waypoints.hide();
+  const stats = collectibles.getStats();
+  const timeStr = formatTime(flightTime);
   crashDetail.textContent =
     reason === "crash-hard"
-      ? "Too fast or too steep on landing. Reduce speed and keep wings level!"
-      : "Something went wrong. Check your speed and angle on approach.";
+      ? `Too fast or too steep! Time: ${timeStr} · Score: ${score} · Rings: ${stats.ringsThisRun} · Coins: ${stats.coinsThisRun} (+${stats.coinBank} saved)`
+      : `Flight ended. Time: ${timeStr} · Score: ${score} · Rings: ${stats.ringsThisRun} · Coins: ${stats.coinsThisRun}`;
 }
 
 const demo = new DemoFlight(
@@ -303,7 +313,8 @@ function animate() {
   const dt = Math.min(clock.getDelta(), 0.05);
 
   if (demoMode) {
-    demo.update(dt, world.rings);
+    demo.update(dt, collectibles.rings);
+    collectibles.animate(dt);
     sounds.update({
       aircraftType: selectedAircraft,
       throttle: flight.throttle,
@@ -312,10 +323,16 @@ function animate() {
       stallWarning: false,
     });
   } else if (playing && !flight.crashed) {
+    flightTime += dt;
+
     const input = autopilot.mergeInput(getInput(), flight);
     const result = flight.update(dt, input, terrainHeight, windField);
 
     if (result === "crash-hard") showCrash("crash-hard");
+
+    collectibles.spawnAheadOf(flight.position);
+    collectibles.cullBehind(flight.position);
+    collectibles.animate(dt);
 
     const wpResult = autopilot.advanceIfReached(flight);
     if (wpResult === "advance") {
@@ -329,14 +346,18 @@ function animate() {
       refreshHUD(`Mission complete! +${autopilot.mission.reward}`);
     }
 
-    const collected = checkRingCollision(flight.position, world.rings);
-    if (collected > 0) {
-      score += collected * 100;
-      sounds.playRing();
-      refreshHUD(`+${collected * 100} RING BONUS!`);
+    const hit = collectibles.checkCollisions(flight.position);
+    if (hit.rings > 0 || hit.coins > 0) {
+      score += hit.ringScore + hit.coinScore;
+      if (hit.rings > 0) sounds.playRing();
+      if (hit.coins > 0) sounds.playCoin();
+      const parts = [];
+      if (hit.rings > 0) parts.push(`+${hit.ringScore} ring${hit.rings > 1 ? "s" : ""}`);
+      if (hit.coins > 0) parts.push(`+${hit.coins} coin${hit.coins > 1 ? "s" : ""}`);
+      refreshHUD(parts.join(" · "));
       setTimeout(() => {
         if (playing) refreshHUD("");
-      }, 1500);
+      }, 1200);
     } else {
       refreshHUD("");
     }

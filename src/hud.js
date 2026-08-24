@@ -1,9 +1,30 @@
+import { formatTime } from "./collectibles.js";
+
 export function createHUD(container) {
   container.innerHTML = `
     <div class="hud-horizon" id="hud-horizon">
       <div class="horizon-sky"></div>
       <div class="horizon-ground"></div>
       <div class="horizon-line" id="horizon-line"></div>
+    </div>
+    <div class="hud-stats-bar">
+      <div class="hud-stat">
+        <span class="hud-stat-icon">⏱</span>
+        <span class="hud-stat-value" id="hud-timer">0:00</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-stat-icon">★</span>
+        <span class="hud-stat-value" id="hud-score">0</span>
+      </div>
+      <div class="hud-stat">
+        <span class="hud-stat-icon">◎</span>
+        <span class="hud-stat-value" id="hud-rings">0</span>
+      </div>
+      <div class="hud-stat hud-stat-coins">
+        <span class="hud-stat-icon">🪙</span>
+        <span class="hud-stat-value" id="hud-coins">0</span>
+        <span class="hud-stat-bank" id="hud-coin-bank">(0 total)</span>
+      </div>
     </div>
     <div class="hud-left">
       <div class="hud-panel">
@@ -36,12 +57,8 @@ export function createHUD(container) {
         <div class="value hud-aircraft" id="hud-aircraft">Prop</div>
       </div>
     </div>
-    <div class="hud-top hud-panel">
-      <div class="label">Score</div>
-      <div class="value" id="hud-score">0</div>
-    </div>
-    <div class="hud-top hud-panel" style="top: 4.5rem;" id="hud-mission">FREE FLIGHT</div>
-    <div class="hud-top hud-panel hud-ap" style="top: 7rem;" id="hud-status"></div>
+    <div class="hud-top hud-panel" style="top: 4.2rem;" id="hud-mission">FREE FLIGHT</div>
+    <div class="hud-top hud-panel hud-ap" style="top: 6.8rem;" id="hud-status"></div>
   `;
 
   return {
@@ -53,6 +70,10 @@ export function createHUD(container) {
     throttle: container.querySelector("#hud-throttle"),
     aircraft: container.querySelector("#hud-aircraft"),
     score: container.querySelector("#hud-score"),
+    timer: container.querySelector("#hud-timer"),
+    rings: container.querySelector("#hud-rings"),
+    coins: container.querySelector("#hud-coins"),
+    coinBank: container.querySelector("#hud-coin-bank"),
     mission: container.querySelector("#hud-mission"),
     status: container.querySelector("#hud-status"),
     horizonLine: container.querySelector("#horizon-line"),
@@ -71,6 +92,11 @@ export function updateHUD(hud, flight, groundY, score, stallSpeed, extras = {}) 
   hud.throttle.textContent = `${Math.round(flight.throttle * 100)}%`;
   hud.score.textContent = score;
   hud.aircraft.textContent = flight.displayName?.split(" ")[0] ?? "Plane";
+
+  if (extras.flightTime != null) hud.timer.textContent = formatTime(extras.flightTime);
+  if (extras.rings != null) hud.rings.textContent = extras.rings;
+  if (extras.coins != null) hud.coins.textContent = extras.coins;
+  if (extras.coinBank != null) hud.coinBank.textContent = `(${extras.coinBank} saved)`;
 
   if (extras.wind) {
     hud.wind.textContent = extras.wind.kts;
@@ -91,8 +117,10 @@ export function updateHUD(hud, flight, groundY, score, stallSpeed, extras = {}) 
   if (extras.statusText) {
     hud.status.textContent = extras.statusText;
     hud.status.style.opacity = extras.statusText ? "1" : "0";
+    hud.status.className = "hud-top hud-panel hud-ap";
   } else if (flight.onGround) {
     hud.status.textContent = "ON GROUND";
+    hud.status.className = "hud-top hud-panel hud-ap";
     hud.status.style.opacity = "0.7";
   } else if (showStall) {
     hud.status.textContent = "STALL WARNING";
