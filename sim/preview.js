@@ -25,16 +25,26 @@ fill.position.set(-4, 2, -3);
 scene.add(fill);
 
 const loader = new GLTFLoader();
+const aircraftCfg = await fetch("/sim/aircraft.json").then((r) => r.json());
+
 const models = {};
 let current = null;
 let spin = 0;
 let sizeScale = 1;
 let baseYaw = 0;
 
-const planeSetup = {
-  b744: { path: "/sim/assets/b744.glb", yaw: 0 },
-  a380: { path: "/sim/assets/a380.glb", yaw: Math.PI / 2 },
-};
+function deg(n) {
+  return THREE.MathUtils.degToRad(n);
+}
+
+function applyMountRotation(mount, rotationDeg) {
+  mount.rotation.order = "YXZ";
+  mount.rotation.set(
+    deg(rotationDeg[0]),
+    deg(rotationDeg[1]),
+    deg(rotationDeg[2])
+  );
+}
 
 function resize() {
   const w = canvas.clientWidth;
@@ -68,11 +78,14 @@ async function loadPlane(id) {
   status.hidden = false;
 
   if (!models[id]) {
-    const cfg = planeSetup[id];
-    const gltf = await loader.loadAsync(cfg.path);
-    const root = gltf.scene;
-    root.rotation.set(0, cfg.yaw, 0);
-    models[id] = root;
+    const cfg = aircraftCfg[id];
+    const gltf = await loader.loadAsync(`/sim/assets/${id}.glb`);
+    // Rotate a wrapper, not the GLB root — the root carries the Y-up fix matrix.
+    const mount = new THREE.Group();
+    const model = gltf.scene;
+    mount.add(model);
+    applyMountRotation(mount, cfg.rotationDeg);
+    models[id] = mount;
   }
 
   if (current && current !== models[id]) {
@@ -80,7 +93,7 @@ async function loadPlane(id) {
   }
 
   current = models[id];
-  baseYaw = planeSetup[id].yaw;
+  baseYaw = deg(aircraftCfg[id].rotationDeg[1]);
   if (!current.parent) {
     scene.add(current);
     frameModel(current);

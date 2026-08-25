@@ -1,0 +1,10 @@
+{
+  "b744": {
+    "name": "Boeing 747-400",
+    "rotationDeg": [0, 0, 0]
+  },
+  "a380": {
+    "name": "Airbus A380",
+    "rotationDeg": [0, 90, 0]
+  }
+}
