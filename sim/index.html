@@ -1,220 +1,248 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
-		<title>Sky Pilot</title>
-		<style>
-html, body, #canvas {
-	margin: 0;
-	padding: 0;
-	border: 0;
-}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Pilot — Hangar</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-	color: white;
-	background-color: black;
-	overflow: hidden;
-	touch-action: none;
-}
+      body {
+        min-height: 100vh;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: #e8f4ff;
+        background: radial-gradient(ellipse at 50% 0%, #1a3a5c 0%, #0a1628 55%, #060d18 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+      }
 
-#canvas {
-	display: block;
-}
+      .back {
+        position: absolute;
+        top: 1.25rem;
+        left: 1.25rem;
+        color: #7dd3fc;
+        text-decoration: none;
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
 
-#canvas:focus {
-	outline: none;
-}
+      .back:hover { opacity: 1; }
 
-#status, #status-splash, #status-progress {
-	position: absolute;
-	left: 0;
-	right: 0;
-}
+      header { text-align: center; margin-bottom: 2rem; }
 
-#status, #status-splash {
-	top: 0;
-	bottom: 0;
-}
+      h1 {
+        font-size: clamp(2rem, 5vw, 2.8rem);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        background: linear-gradient(135deg, #7dd3fc, #38bdf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
 
-#status {
-	background-color: #242424;
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	visibility: hidden;
-}
+      .tagline {
+        margin-top: 0.4rem;
+        opacity: 0.7;
+        font-size: 1rem;
+      }
 
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
-}
+      .panel {
+        width: 100%;
+        max-width: 720px;
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid rgba(56, 189, 248, 0.25);
+        background: rgba(8, 20, 38, 0.9);
+      }
 
-#status-splash.show-image--false {
-	display: none;
-}
+      .planes {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
 
-#status-splash.fullsize--true {
-	height: 100%;
-	width: 100%;
-	object-fit: contain;
-}
+      @media (max-width: 520px) {
+        .planes { grid-template-columns: 1fr; }
+      }
 
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
-}
+      .plane-btn {
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 2px solid rgba(56, 189, 248, 0.25);
+        background: rgba(12, 28, 48, 0.8);
+        color: inherit;
+        cursor: pointer;
+        text-align: left;
+        transition: border-color 0.2s, background 0.2s;
+      }
 
-#status-progress, #status-notice {
-	display: none;
-}
+      .plane-btn:hover {
+        border-color: rgba(56, 189, 248, 0.5);
+      }
 
-#status-progress {
-	bottom: 10%;
-	width: 50%;
-	margin: 0 auto;
-}
+      .plane-btn.selected {
+        border-color: #38bdf8;
+        background: rgba(18, 45, 75, 0.95);
+      }
 
-#status-notice {
-	background-color: #5b3943;
-	border-radius: 0.5rem;
-	border: 1px solid #9b3943;
-	color: #e0e0e0;
-	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-	line-height: 1.3;
-	margin: 0 2rem;
-	overflow: hidden;
-	padding: 1rem;
-	text-align: center;
-	z-index: 1;
-}
-		</style>
-		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
-<link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
+      .plane-btn strong {
+        display: block;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
 
-	</head>
-	<body>
-		<canvas id="canvas">
-			Your browser does not support the canvas tag.
-		</canvas>
+      .plane-btn span {
+        font-size: 0.85rem;
+        opacity: 0.7;
+      }
 
-		<noscript>
-			Your browser does not support JavaScript.
-		</noscript>
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        margin-bottom: 1.5rem;
+      }
 
-		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
-			<progress id="status-progress"></progress>
-			<div id="status-notice"></div>
-		</div>
+      label.row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
 
-		<script src="index.js"></script>
-		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":7957856,"index.wasm":39514754},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
-const GODOT_THREADS_ENABLED = false;
-const engine = new Engine(GODOT_CONFIG);
+      .size-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
 
-(function () {
-	const statusOverlay = document.getElementById('status');
-	const statusProgress = document.getElementById('status-progress');
-	const statusNotice = document.getElementById('status-notice');
+      .size-row input[type="range"] {
+        flex: 1;
+        accent-color: #38bdf8;
+      }
 
-	let initializing = true;
-	let statusMode = '';
+      .size-row output {
+        min-width: 3.5rem;
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
 
-	function setStatusMode(mode) {
-		if (statusMode === mode || !initializing) {
-			return;
-		}
-		if (mode === 'hidden') {
-			statusOverlay.remove();
-			initializing = false;
-			return;
-		}
-		statusOverlay.style.visibility = 'visible';
-		statusProgress.style.display = mode === 'progress' ? 'block' : 'none';
-		statusNotice.style.display = mode === 'notice' ? 'block' : 'none';
-		statusMode = mode;
-	}
+      .fly-btn {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: #0a1628;
+        background: linear-gradient(135deg, #7dd3fc, #38bdf8);
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+      }
 
-	function setStatusNotice(text) {
-		while (statusNotice.lastChild) {
-			statusNotice.removeChild(statusNotice.lastChild);
-		}
-		const lines = text.split('\n');
-		lines.forEach((line) => {
-			statusNotice.appendChild(document.createTextNode(line));
-			statusNotice.appendChild(document.createElement('br'));
-		});
-	}
+      .fly-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(56, 189, 248, 0.35);
+      }
 
-	function displayFailureNotice(err) {
-		console.error(err);
-		if (err instanceof Error) {
-			setStatusNotice(err.message);
-		} else if (typeof err === 'string') {
-			setStatusNotice(err);
-		} else {
-			setStatusNotice('An unknown error occurred.');
-		}
-		setStatusMode('notice');
-		initializing = false;
-	}
+      .note {
+        margin-top: 1.25rem;
+        text-align: center;
+        font-size: 0.78rem;
+        opacity: 0.45;
+        line-height: 1.5;
+      }
 
-	const missing = Engine.getMissingFeatures({
-		threads: GODOT_THREADS_ENABLED,
-	});
+      .note a { color: #7dd3fc; }
+    </style>
+  </head>
+  <body>
+    <a class="back" href="/">← All games</a>
 
-	if (missing.length !== 0) {
-		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-			let serviceWorkerRegistrationPromise;
-			try {
-				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-			} catch (err) {
-				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-			}
-			// There's a chance that installing the service worker would fix the issue
-			Promise.race([
-				serviceWorkerRegistrationPromise.then((registration) => {
-					if (registration != null) {
-						return Promise.reject(new Error('Service worker already exists.'));
-					}
-					return registration;
-				}).then(() => engine.installServiceWorker()),
-				// For some reason, `getRegistration()` can stall
-				new Promise((resolve) => {
-					setTimeout(() => resolve(), 2000);
-				}),
-			]).then(() => {
-				// Reload if there was no error.
-				window.location.reload();
-			}).catch((err) => {
-				console.error('Error while registering service worker:', err);
-			});
-		} else {
-			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-			displayFailureNotice(missingMsg + missing.join('\n'));
-		}
-	} else {
-		setStatusMode('progress');
-		engine.startGame({
-			'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.value = current;
-					statusProgress.max = total;
-				} else {
-					statusProgress.removeAttribute('value');
-					statusProgress.removeAttribute('max');
-				}
-			},
-		}).then(() => {
-			setStatusMode('hidden');
-		}, displayFailureNotice);
-	}
-}());
-		</script>
-	</body>
+    <header>
+      <h1>SKY PILOT HANGAR</h1>
+      <p class="tagline">Pick your airliner, then fly on a separate page</p>
+    </header>
+
+    <div class="panel">
+      <div class="planes">
+        <button type="button" class="plane-btn selected" data-plane="b744">
+          <strong>Boeing 747-400</strong>
+          <span>Four-engine queen of the skies</span>
+        </button>
+        <button type="button" class="plane-btn" data-plane="a380">
+          <strong>Airbus A380</strong>
+          <span>Double-deck superjumbo</span>
+        </button>
+      </div>
+
+      <div class="options">
+        <label class="row">
+          <input type="checkbox" id="easy" checked />
+          Easy mode (auto-level assist)
+        </label>
+        <label class="row">
+          <input type="checkbox" id="glitch" />
+          Glitch mode (broken planes — just for fun!)
+        </label>
+        <div class="size-row">
+          <label for="size">Plane size</label>
+          <input type="range" id="size" min="50" max="100" step="5" value="100" />
+          <output id="sizeOut">100%</output>
+        </div>
+      </div>
+
+      <button type="button" class="fly-btn" id="flyBtn">Fly Boeing 747-400</button>
+
+      <p class="note">
+        First load downloads the 3D engine (~8 MB). Aircraft models ©
+        <a href="https://www.flightradar24.com" target="_blank" rel="noopener">Flightradar24</a> (GPLv2).
+      </p>
+    </div>
+
+    <script>
+      const planes = document.querySelectorAll(".plane-btn");
+      const flyBtn = document.getElementById("flyBtn");
+      const easy = document.getElementById("easy");
+      const glitch = document.getElementById("glitch");
+      const size = document.getElementById("size");
+      const sizeOut = document.getElementById("sizeOut");
+
+      let selected = "b744";
+
+      const names = {
+        b744: "Boeing 747-400",
+        a380: "Airbus A380",
+      };
+
+      planes.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selected = btn.dataset.plane;
+          planes.forEach((b) => b.classList.toggle("selected", b === btn));
+          flyBtn.textContent = "Fly " + names[selected];
+        });
+      });
+
+      size.addEventListener("input", () => {
+        sizeOut.textContent = size.value + "%";
+      });
+
+      flyBtn.addEventListener("click", () => {
+        const params = new URLSearchParams({
+          plane: selected,
+          easy: easy.checked ? "1" : "0",
+          glitch: glitch.checked ? "1" : "0",
+          size: (parseInt(size.value, 10) / 100).toFixed(2),
+        });
+        window.location.href = "/sim/fly/?" + params.toString();
+      });
+    </script>
+  </body>
 </html>
-

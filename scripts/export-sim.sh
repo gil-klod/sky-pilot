@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 GODOT="${GODOT:-$HOME/bin/godot}"
 GODOT_PROJECT="${GODOT_PROJECT:-$ROOT/../sky-pilot-godot}"
-OUT="$ROOT/sim"
+OUT="$ROOT/sim/fly"
 
 if [[ ! -x "$GODOT" ]]; then
   echo "Godot not found at $GODOT" >&2
@@ -20,4 +20,5 @@ mkdir -p "$OUT"
 "$GODOT" --headless --path "$GODOT_PROJECT" \
   --export-release "Web" "$OUT/index.html"
 
-echo "Exported airliner sim to $OUT"
+echo "Exported flight sim to $OUT"
+echo "Hangar page: $ROOT/sim/index.html"

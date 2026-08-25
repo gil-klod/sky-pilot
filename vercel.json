@@ -11,6 +11,7 @@
   ],
   "rewrites": [
     { "source": "/arcade", "destination": "/arcade/index.html" },
-    { "source": "/sim", "destination": "/sim/index.html" }
+    { "source": "/sim", "destination": "/sim/index.html" },
+    { "source": "/sim/fly", "destination": "/sim/fly/index.html" }
   ]
 }
