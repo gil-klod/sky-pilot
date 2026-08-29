@@ -258,6 +258,10 @@
           <input type="checkbox" id="glitch" />
           Glitch mode (broken planes — just for fun!)
         </label>
+        <label class="row">
+          <input type="checkbox" id="emergency" />
+          Emergency training (engine fire, wing damage, and more!)
+        </label>
         <div class="size-row">
           <label for="size">Plane size</label>
           <input type="range" id="size" min="50" max="100" step="5" value="100" />
@@ -280,6 +284,7 @@
       const flyBtn = document.getElementById("flyBtn");
       const easy = document.getElementById("easy");
       const glitch = document.getElementById("glitch");
+      const emergency = document.getElementById("emergency");
       const size = document.getElementById("size");
       const sizeOut = document.getElementById("sizeOut");
 
@@ -313,6 +318,7 @@
           plane: selected,
           easy: easy.checked ? "1" : "0",
           glitch: glitch.checked ? "1" : "0",
+          emergency: emergency.checked ? "1" : "0",
           size: size.value,
         });
         window.location.href = "/sim/fly/?" + params.toString();
