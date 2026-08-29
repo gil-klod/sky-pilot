@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# Classic sim export — only run if intentionally updating the frozen classic build.
+# Default development uses scripts/export-sim-v2.sh instead.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -24,6 +26,4 @@ cp "$GODOT_PROJECT/assets/aircraft/a380.glb" "$ASSETS/"
 "$GODOT" --headless --path "$GODOT_PROJECT" \
   --export-release "Web" "$OUT/index.html"
 
-echo "Exported flight sim to $OUT"
-echo "Hangar page: $ROOT/sim/index.html"
-echo "Preview models: $ASSETS"
+echo "Exported CLASSIC flight sim to $OUT (frozen build path)"

@@ -39,9 +39,9 @@
 
       .games {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         gap: 1.5rem;
-        max-width: 760px;
+        max-width: 980px;
         width: 100%;
       }
 
@@ -114,7 +114,7 @@
   <body>
     <header>
       <h1>SKY PILOT</h1>
-      <p class="tagline">Two ways to fly — pick your game</p>
+      <p class="tagline">Three ways to fly — pick your game</p>
     </header>
 
     <div class="games">
@@ -129,13 +129,23 @@
       </a>
 
       <a class="game-card" href="/sim/">
-        <span class="badge sim">Airliner Sim</span>
-        <h2>747 &amp; A380</h2>
+        <span class="badge sim">Classic Sim</span>
+        <h2>747 &amp; A380 Classic</h2>
         <p>
-          Real Boeing 747-400 and Airbus A380 models. Pick your airliner in the
-          hangar, then take off on a wide runway. Built with Godot.
+          The original buggy, glitchy airliner sim — frozen as your kid loves it.
+          Random emergencies, wild physics, all the chaos.
         </p>
-        <span class="play">Open hangar →</span>
+        <span class="play">Classic hangar →</span>
+      </a>
+
+      <a class="game-card" href="/sim/v2/">
+        <span class="badge" style="background: rgba(167, 139, 250, 0.15); color: #c4b5fd;">Sim V2</span>
+        <h2>747 &amp; A380 New</h2>
+        <p>
+          Improved version — fixed landing gear, pick your emergency, better wing
+          damage FX. Same planes, cleaner sim.
+        </p>
+        <span class="play">New hangar →</span>
       </a>
     </div>
 

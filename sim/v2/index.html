@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sky Pilot — Hangar V2</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        min-height: 100vh;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: #e8f4ff;
+        background: radial-gradient(ellipse at 50% 0%, #1a3a5c 0%, #0a1628 55%, #060d18 100%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+      }
+
+      .back {
+        position: absolute;
+        top: 1.25rem;
+        left: 1.25rem;
+        color: #7dd3fc;
+        text-decoration: none;
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
+
+      .back:hover { opacity: 1; }
+
+      header { text-align: center; margin-bottom: 2rem; }
+
+      h1 {
+        font-size: clamp(2rem, 5vw, 2.8rem);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        background: linear-gradient(135deg, #a78bfa, #38bdf8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .tagline {
+        margin-top: 0.4rem;
+        opacity: 0.7;
+        font-size: 1rem;
+      }
+
+      .badge-v2 {
+        display: inline-block;
+        margin-top: 0.5rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.25rem 0.55rem;
+        border-radius: 4px;
+        background: rgba(167, 139, 250, 0.2);
+        color: #c4b5fd;
+      }
+
+      .panel {
+        width: 100%;
+        max-width: 860px;
+        padding: 2rem;
+        border-radius: 16px;
+        border: 1px solid rgba(167, 139, 250, 0.35);
+        background: rgba(8, 20, 38, 0.9);
+      }
+
+      .main-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+
+      @media (max-width: 720px) {
+        .main-row { grid-template-columns: 1fr; }
+      }
+
+      .preview-box {
+        border-radius: 12px;
+        border: 2px solid rgba(167, 139, 250, 0.25);
+        background: rgba(3, 8, 14, 0.95);
+        overflow: hidden;
+        min-height: 240px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .preview-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(140, 170, 195, 0.85);
+        padding: 0.5rem 0.75rem 0;
+      }
+
+      .preview-wrap {
+        position: relative;
+        flex: 1;
+        min-height: 200px;
+      }
+
+      #previewCanvas {
+        display: block;
+        width: 100%;
+        height: 220px;
+      }
+
+      #previewStatus {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        opacity: 0.65;
+        pointer-events: none;
+      }
+
+      .planes {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .plane-btn {
+        flex: 1;
+        padding: 1.25rem;
+        border-radius: 12px;
+        border: 2px solid rgba(167, 139, 250, 0.25);
+        background: rgba(12, 28, 48, 0.8);
+        color: inherit;
+        cursor: pointer;
+        text-align: left;
+        transition: border-color 0.2s, background 0.2s;
+      }
+
+      .plane-btn:hover {
+        border-color: rgba(167, 139, 250, 0.5);
+      }
+
+      .plane-btn.selected {
+        border-color: #a78bfa;
+        background: rgba(30, 25, 60, 0.95);
+      }
+
+      .plane-btn strong {
+        display: block;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+      }
+
+      .plane-btn span {
+        font-size: 0.85rem;
+        opacity: 0.7;
+      }
+
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        margin-bottom: 1.5rem;
+      }
+
+      label.row {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+
+      .emergency-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .emergency-row label {
+        font-size: 0.95rem;
+      }
+
+      .emergency-row select {
+        padding: 0.55rem 0.65rem;
+        border-radius: 8px;
+        border: 1px solid rgba(167, 139, 250, 0.35);
+        background: rgba(12, 28, 48, 0.95);
+        color: #e8f4ff;
+        font-size: 0.95rem;
+      }
+
+      .emergency-hint {
+        font-size: 0.78rem;
+        opacity: 0.6;
+        line-height: 1.4;
+      }
+
+      .size-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+      }
+
+      .size-row input[type="range"] {
+        flex: 1;
+        accent-color: #a78bfa;
+      }
+
+      .size-row output {
+        min-width: 3.5rem;
+        font-size: 0.9rem;
+        opacity: 0.85;
+      }
+
+      .fly-btn {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.15rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        color: #0a1628;
+        background: linear-gradient(135deg, #c4b5fd, #38bdf8);
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+      }
+
+      .fly-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(167, 139, 250, 0.35);
+      }
+
+      .note {
+        margin-top: 1.25rem;
+        text-align: center;
+        font-size: 0.78rem;
+        opacity: 0.45;
+        line-height: 1.5;
+      }
+
+      .note a { color: #7dd3fc; }
+    </style>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <a class="back" href="/">← All games</a>
+
+    <header>
+      <h1>SKY PILOT HANGAR</h1>
+      <p class="tagline">New version — pick your plane and your emergency</p>
+      <span class="badge-v2">V2 · Improved</span>
+    </header>
+
+    <div class="panel">
+      <div class="main-row">
+        <div class="preview-box">
+          <div class="preview-label">Preview</div>
+          <div class="preview-wrap">
+            <canvas id="previewCanvas"></canvas>
+            <div id="previewStatus">Loading preview…</div>
+          </div>
+        </div>
+
+        <div class="planes">
+          <button type="button" class="plane-btn selected" data-plane="b744">
+            <strong>Boeing 747-400</strong>
+            <span>Four-engine queen of the skies</span>
+          </button>
+          <button type="button" class="plane-btn" data-plane="a380">
+            <strong>Airbus A380</strong>
+            <span>Double-deck superjumbo</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="options">
+        <label class="row">
+          <input type="checkbox" id="easy" checked />
+          Easy mode (auto-level assist)
+        </label>
+        <label class="row">
+          <input type="checkbox" id="glitch" />
+          Glitch mode (broken planes — just for fun!)
+        </label>
+
+        <div class="emergency-row">
+          <label for="emergencyType">Emergency to practice</label>
+          <select id="emergencyType">
+            <option value="off">No emergency (free flight)</option>
+            <option value="engine_fire">Engine fire</option>
+            <option value="wing">Broken wing</option>
+            <option value="hydraulic">Hydraulic failure</option>
+            <option value="bird">Bird strike</option>
+            <option value="dual">Dual engine failure</option>
+            <option value="random">Surprise me (random)</option>
+          </select>
+          <p class="emergency-hint">
+            In flight: press <strong>X</strong> to trigger your chosen emergency, or keys
+            <strong>1–5</strong> to pick one on the spot (1 fire · 2 wing · 3 hyd · 4 bird · 5 dual).
+          </p>
+        </div>
+
+        <div class="size-row">
+          <label for="size">Plane size</label>
+          <input type="range" id="size" min="50" max="100" step="5" value="100" />
+          <output id="sizeOut">100%</output>
+        </div>
+      </div>
+
+      <button type="button" class="fly-btn" id="flyBtn">Fly Boeing 747-400</button>
+
+      <p class="note">
+        Prefer the classic buggy version?
+        <a href="/sim/">Play Classic hangar →</a>
+        · Aircraft models ©
+        <a href="https://www.flightradar24.com" target="_blank" rel="noopener">Flightradar24</a> (GPLv2).
+      </p>
+    </div>
+
+    <script type="module" src="/sim/preview.js"></script>
+    <script>
+      const planes = document.querySelectorAll(".plane-btn");
+      const flyBtn = document.getElementById("flyBtn");
+      const easy = document.getElementById("easy");
+      const glitch = document.getElementById("glitch");
+      const emergencyType = document.getElementById("emergencyType");
+      const size = document.getElementById("size");
+      const sizeOut = document.getElementById("sizeOut");
+
+      let selected = "b744";
+
+      const names = {
+        b744: "Boeing 747-400",
+        a380: "Airbus A380",
+      };
+
+      function currentSizeScale() {
+        return parseInt(size.value, 10) / 100;
+      }
+
+      planes.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          selected = btn.dataset.plane;
+          planes.forEach((b) => b.classList.toggle("selected", b === btn));
+          flyBtn.textContent = "Fly " + names[selected];
+          window.hangarPreview?.setPlane(selected);
+        });
+      });
+
+      size.addEventListener("input", () => {
+        sizeOut.textContent = size.value + "%";
+        window.hangarPreview?.setSize(currentSizeScale());
+      });
+
+      flyBtn.addEventListener("click", () => {
+        const et = emergencyType.value;
+        const params = new URLSearchParams({
+          plane: selected,
+          easy: easy.checked ? "1" : "0",
+          glitch: glitch.checked ? "1" : "0",
+          emergency: et === "off" ? "0" : "1",
+          emergency_type: et === "off" ? "random" : et,
+          size: size.value,
+        });
+        window.location.href = "/sim/fly-v2/?" + params.toString();
+      });
+    </script>
+  </body>
+</html>
