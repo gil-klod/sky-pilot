@@ -201,6 +201,34 @@
         line-height: 1.4;
       }
 
+      .controls-box {
+        padding: 0.85rem 1rem;
+        border-radius: 10px;
+        border: 1px solid rgba(167, 139, 250, 0.2);
+        background: rgba(6, 14, 26, 0.65);
+        font-size: 0.78rem;
+        line-height: 1.55;
+        opacity: 0.88;
+      }
+
+      .controls-box h3 {
+        font-size: 0.68rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #c4b5fd;
+        margin-bottom: 0.35rem;
+        font-weight: 700;
+      }
+
+      .controls-box p + h3 {
+        margin-top: 0.65rem;
+      }
+
+      .controls-box strong {
+        color: #e8f4ff;
+        font-weight: 600;
+      }
+
       .size-row {
         display: flex;
         align-items: center;
@@ -312,6 +340,26 @@
           <p class="emergency-hint">
             In flight: press <strong>X</strong> to trigger your chosen emergency, or keys
             <strong>1–5</strong> to pick one on the spot (1 fire · 2 wing · 3 hyd · 4 bird · 5 dual).
+          </p>
+        </div>
+
+        <div class="controls-box">
+          <h3>Flight controls</h3>
+          <p>
+            <strong>Shift</strong> throttle · <strong>G</strong> gear · <strong>W/A/S/D</strong> fly ·
+            <strong>Q/E</strong> or arrows turn on runway · <strong>Space</strong> brake ·
+            <strong>R</strong> reset
+          </p>
+          <h3>Camera (V2)</h3>
+          <p>
+            <strong>C</strong> cycle views (chase, close, cockpit, wings, top, free) ·
+            <strong>V</strong> reset camera · <strong>I/K/J/L</strong> orbit ·
+            <strong>[ ]</strong> or mouse wheel zoom · in Free look hold <strong>right mouse</strong> and drag
+          </p>
+          <h3>Emergencies</h3>
+          <p>
+            Pick above, then <strong>X</strong> in flight — or keys <strong>1–5</strong> anytime
+            (1 fire · 2 wing · 3 hyd · 4 bird · 5 dual)
           </p>
         </div>
 
